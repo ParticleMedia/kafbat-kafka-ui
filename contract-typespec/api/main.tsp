@@ -13,6 +13,7 @@ import "./auth.tsp";
 import "./config.tsp";
 import "./graphs.tsp";
 import "./prometheus.tsp";
+import "./partition-reassignments.tsp";
 
 import "@typespec/http";
 import "@typespec/rest";
@@ -30,4 +31,3 @@ using Rest;
 })
 @server("http://localhost:8080", "Default endpoint for Kafbat UI API")
 namespace Api;
-

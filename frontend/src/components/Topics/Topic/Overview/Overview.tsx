@@ -4,17 +4,123 @@ import BytesFormatted from 'components/common/BytesFormatted/BytesFormatted';
 import Table from 'components/common/NewTable';
 import * as Metrics from 'components/common/Metrics';
 import { Tag } from 'components/common/Tag/Tag.styled';
-import { RouteParamsClusterTopic } from 'lib/paths';
+import { clusterBrokerPath, RouteParamsClusterTopic } from 'lib/paths';
 import useAppParams from 'lib/hooks/useAppParams';
 import { useTopicDetails } from 'lib/hooks/api/topics';
 import { ColumnDef } from '@tanstack/react-table';
+import { useClusterStats } from 'lib/hooks/api/clusters';
+import Heading from 'components/common/heading/Heading.styled';
+import { NavLink } from 'react-router-dom';
 
 import * as S from './Overview.styled';
 import ActionsCell from './ActionsCell';
+import DistributionMetrics from './DistributionMetrics';
+import BrokerDistributionTable from './BrokerDistributionTable';
+
+const getPartitionColumns = (clusterName: string): ColumnDef<Partition>[] => [
+  {
+    header: 'Partition ID',
+    enableSorting: false,
+    accessorKey: 'partition',
+  },
+  {
+    header: 'Leader',
+    enableSorting: false,
+    accessorKey: 'leader',
+    cell: ({ getValue }) => {
+      const brokerId = getValue<number | undefined>();
+      return brokerId === undefined ? (
+        'N/A'
+      ) : (
+        <NavLink to={clusterBrokerPath(clusterName, brokerId)}>
+          {brokerId}
+        </NavLink>
+      );
+    },
+  },
+  {
+    header: 'Replicas',
+    enableSorting: false,
+    accessorKey: 'replicas',
+    cell: ({ getValue }) => {
+      const replicas = getValue<Partition['replicas']>();
+      if (replicas === undefined || replicas.length === 0) {
+        return 0;
+      }
+      return replicas.map(({ broker, leader, inSync }: Replica) => (
+        <S.Replica
+          leader={leader}
+          outOfSync={!inSync}
+          key={broker}
+          title={leader ? 'Leader' : ''}
+        >
+          {broker}
+        </S.Replica>
+      ));
+    },
+  },
+  {
+    header: 'In Sync Replicas',
+    enableSorting: false,
+    accessorKey: 'inSyncReplicas',
+    cell: ({ row }) =>
+      row.original.replicas
+        ?.filter(({ inSync }) => inSync)
+        .map(({ broker }) => broker)
+        .join(', ') || 'None',
+  },
+  {
+    header: 'Preferred Leader',
+    enableSorting: false,
+    accessorKey: 'preferredLeader',
+    cell: ({ row }) => {
+      const preferred =
+        row.original.replicas?.[0]?.broker === row.original.leader;
+      return (
+        <Tag color={preferred ? 'green' : 'yellow'}>
+          {preferred ? 'Preferred' : 'Not preferred'}
+        </Tag>
+      );
+    },
+  },
+  {
+    header: 'Replication Health',
+    enableSorting: false,
+    accessorKey: 'replicationHealth',
+    cell: ({ row }) => {
+      const replicas = row.original.replicas ?? [];
+      const underReplicated =
+        replicas.filter(({ inSync }) => inSync).length < replicas.length;
+      return (
+        <Tag color={underReplicated ? 'red' : 'green'}>
+          {underReplicated ? 'Under replicated' : 'Healthy'}
+        </Tag>
+      );
+    },
+  },
+  {
+    header: 'First Offset',
+    enableSorting: false,
+    accessorKey: 'offsetMin',
+  },
+  { header: 'Next Offset', enableSorting: false, accessorKey: 'offsetMax' },
+  {
+    header: 'Message Count',
+    enableSorting: false,
+    accessorKey: `messageCount`,
+  },
+  {
+    header: '',
+    enableSorting: false,
+    accessorKey: 'actions',
+    cell: ActionsCell,
+  },
+];
 
 const Overview: React.FC = () => {
   const { clusterName, topicName } = useAppParams<RouteParamsClusterTopic>();
   const { data } = useTopicDetails({ clusterName, topicName });
+  const { data: clusterStats } = useClusterStats(clusterName);
 
   const messageCount = React.useMemo(
     () =>
@@ -34,54 +140,9 @@ const Overview: React.FC = () => {
     });
   }, [data?.partitions]);
 
-  const columns = React.useMemo<ColumnDef<Partition>[]>(
-    () => [
-      {
-        header: 'Partition ID',
-        enableSorting: false,
-        accessorKey: 'partition',
-      },
-      {
-        header: 'Replicas',
-        enableSorting: false,
-
-        accessorKey: 'replicas',
-        cell: ({ getValue }) => {
-          const replicas = getValue<Partition['replicas']>();
-          if (replicas === undefined || replicas.length === 0) {
-            return 0;
-          }
-          return replicas?.map(({ broker, leader, inSync }: Replica) => (
-            <S.Replica
-              leader={leader}
-              outOfSync={!inSync}
-              key={broker}
-              title={leader ? 'Leader' : ''}
-            >
-              {broker}
-            </S.Replica>
-          ));
-        },
-      },
-      {
-        header: 'First Offset',
-        enableSorting: false,
-        accessorKey: 'offsetMin',
-      },
-      { header: 'Next Offset', enableSorting: false, accessorKey: 'offsetMax' },
-      {
-        header: 'Message Count',
-        enableSorting: false,
-        accessorKey: `messageCount`,
-      },
-      {
-        header: '',
-        enableSorting: false,
-        accessorKey: 'actions',
-        cell: ActionsCell,
-      },
-    ],
-    []
+  const columns = React.useMemo(
+    () => getPartitionColumns(clusterName),
+    [clusterName]
   );
   return (
     <>
@@ -143,13 +204,25 @@ const Overview: React.FC = () => {
             {messageCount}
           </Metrics.Indicator>
         </Metrics.Section>
+        {data && (
+          <DistributionMetrics
+            topic={data}
+            clusterBrokerCount={clusterStats.brokerCount ?? 0}
+          />
+        )}
       </Metrics.Wrapper>
-      <Table
-        columns={columns}
-        data={newData}
-        enableSorting
-        emptyMessage="No Partitions found "
-      />
+      {data && (
+        <BrokerDistributionTable clusterName={clusterName} topic={data} />
+      )}
+      <S.DataSection>
+        <Heading level={3}>Partition Information</Heading>
+        <Table
+          columns={columns}
+          data={newData}
+          enableSorting
+          emptyMessage="No Partitions found "
+        />
+      </S.DataSection>
     </>
   );
 };

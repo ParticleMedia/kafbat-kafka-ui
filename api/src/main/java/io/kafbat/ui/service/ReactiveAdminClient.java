@@ -61,6 +61,7 @@ import org.apache.kafka.clients.admin.NewPartitionReassignment;
 import org.apache.kafka.clients.admin.NewPartitions;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.admin.PartitionReassignment;
 import org.apache.kafka.clients.admin.ProducerState;
 import org.apache.kafka.clients.admin.QuorumInfo;
 import org.apache.kafka.clients.admin.RecordsToDelete;
@@ -501,6 +502,15 @@ public class ReactiveAdminClient implements Closeable {
     return toMono(client.alterPartitionReassignments(reassignments).all());
   }
 
+  public Mono<Map<TopicPartition, PartitionReassignment>> listPartitionReassignments(
+      Set<TopicPartition> partitions) {
+    return toMono(client.listPartitionReassignments(partitions).reassignments());
+  }
+
+  public Mono<Map<TopicPartition, PartitionReassignment>> listPartitionReassignments() {
+    return toMono(client.listPartitionReassignments().reassignments());
+  }
+
   public Mono<Void> createPartitions(Map<String, NewPartitions> newPartitionsMap) {
     return toMono(client.createPartitions(newPartitionsMap).all());
   }
@@ -703,6 +713,21 @@ public class ReactiveAdminClient implements Closeable {
     ConfigResource cr = new ConfigResource(ConfigResource.Type.BROKER, String.valueOf(brokerId));
     AlterConfigOp op = new AlterConfigOp(new ConfigEntry(name, value), AlterConfigOp.OpType.SET);
     return toMono(client.incrementalAlterConfigs(Map.of(cr, List.of(op))).all());
+  }
+
+  public Mono<Map<ConfigResource, Config>> describeConfigs(
+      Collection<ConfigResource> resources) {
+    return toMono(client.describeConfigs(resources).all());
+  }
+
+  public Mono<Void> incrementalAlterConfigs(
+      Map<ConfigResource, List<AlterConfigOp>> alterations) {
+    if (alterations.isEmpty()) {
+      return Mono.empty();
+    }
+    Map<ConfigResource, Collection<AlterConfigOp>> request = new HashMap<>();
+    request.putAll(alterations);
+    return toMono(client.incrementalAlterConfigs(request).all());
   }
 
   public Mono<Void> deleteRecords(Map<TopicPartition, Long> offsets) {

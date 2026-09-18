@@ -25,7 +25,8 @@ public class ReadOnlyModeFilter implements WebFilter {
       Pattern.compile("/api/clusters/(?<clusterName>[^/]++)");
 
   private static final Set<Pattern> SAFE_ENDPOINTS = Set.of(
-      Pattern.compile("/api/clusters/[^/]+/topics/[^/]+/(smartfilters|analysis)$")
+      Pattern.compile("/api/clusters/[^/]+/topics/[^/]+/(smartfilters|analysis)$"),
+      Pattern.compile("/api/clusters/[^/]+/partition-reassignments/(plan|validate)$")
   );
 
   private final ClustersStorage clustersStorage;

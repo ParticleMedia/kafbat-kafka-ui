@@ -1,5 +1,13 @@
 import styled from 'styled-components';
 
+export const DataSection = styled.section`
+  margin-top: 16px;
+
+  & > h3 {
+    margin: 0 16px 16px;
+  }
+`;
+
 export const Replica = styled.span.attrs({ 'aria-label': 'replica-info' })<{
   leader?: boolean;
   outOfSync?: boolean;

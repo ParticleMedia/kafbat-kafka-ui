@@ -29,6 +29,11 @@ model ApiDuplicateResponse is Response<409> {
   message: string;
 }
 
+model ApiConflictResponse is Response<409> {
+  @body
+  message: ErrorResponse;
+}
+
 model ApiRebalanceInProgressResponse is Response<409> {
   message: string;
 }
@@ -44,6 +49,11 @@ model ApiBadRequestResponse is Response<400> {
 
 model ApiUnauthorized is Response<401> {
   message: string;
+}
+
+model ApiForbiddenResponse is Response<403> {
+  @body
+  message: ErrorResponse;
 }
 
 model ErrorResponse {

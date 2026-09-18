@@ -13,6 +13,7 @@ import {
   externalTopicPayload,
   internalTopicPayload,
 } from 'lib/fixtures/topics';
+import { useClusterStats } from 'lib/hooks/api/clusters';
 
 const clusterName = 'local';
 const topicName = 'topic';
@@ -30,6 +31,10 @@ jest.mock('lib/hooks/api/topics', () => ({
   useClearTopicMessages: jest.fn(),
 }));
 
+jest.mock('lib/hooks/api/clusters', () => ({
+  useClusterStats: jest.fn(),
+}));
+
 const clearTopicMessage = jest.fn();
 
 describe('Overview', () => {
@@ -37,6 +42,9 @@ describe('Overview', () => {
     topic: Topic = externalTopicPayload,
     context = defaultContextValues
   ) => {
+    (useClusterStats as jest.Mock).mockReturnValue({
+      data: { brokerCount: 4 },
+    });
     (useTopicDetails as jest.Mock).mockImplementation(() => ({
       data: topic,
     }));
@@ -57,6 +65,76 @@ describe('Overview', () => {
   it('at least one replica was rendered', () => {
     renderComponent();
     expect(screen.getByLabelText('replica-info')).toBeInTheDocument();
+  });
+
+  it('renders distribution health, broker placement, and partition health', () => {
+    renderComponent({
+      ...externalTopicPayload,
+      partitionCount: 2,
+      replicationFactor: 2,
+      replicas: 4,
+      inSyncReplicas: 3,
+      underReplicatedPartitions: 1,
+      partitions: [
+        {
+          partition: 0,
+          leader: 1,
+          offsetMin: 0,
+          offsetMax: 100,
+          replicas: [
+            { broker: 1, leader: true, inSync: true },
+            { broker: 2, leader: false, inSync: false },
+          ],
+        },
+        {
+          partition: 1,
+          leader: 2,
+          offsetMin: 0,
+          offsetMax: 200,
+          replicas: [
+            { broker: 1, leader: false, inSync: true },
+            { broker: 2, leader: true, inSync: true },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      screen.getByRole('heading', { name: 'Distribution health' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Broker Spread')).toBeInTheDocument();
+    expect(screen.getByText('Preferred Leaders')).toBeInTheDocument();
+    expect(screen.getByText('Under Replicated')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Assignment planner' })
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.getByRole('heading', { name: 'Partitions by Broker' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Partitions by Broker' })
+        .parentElement
+    ).toHaveStyleRule('margin-top', '16px');
+    expect(
+      screen.getByRole('heading', { name: 'Partition Information' })
+        .parentElement
+    ).toHaveStyleRule('margin-top', '16px');
+    expect(screen.getByRole('row', { name: /Broker 1/ })).toHaveTextContent(
+      '0, 1'
+    );
+    expect(screen.getByRole('row', { name: /Broker 2/ })).toHaveTextContent(
+      '1'
+    );
+
+    const underReplicatedPartition = screen.getByRole('row', {
+      name: /Under replicated/,
+    });
+    expect(underReplicatedPartition).toHaveTextContent('Preferred');
+    const nonPreferredPartition = screen.getByRole('row', {
+      name: /Not preferred/,
+    });
+    expect(nonPreferredPartition).toHaveTextContent('Healthy');
   });
 
   it('renders replica cell with props', () => {
@@ -101,7 +179,7 @@ describe('Overview', () => {
     it('should be in document', () => {
       renderComponent();
       const circles = screen.getAllByRole('circle');
-      expect(circles.length).toEqual(2);
+      expect(circles.length).toEqual(7);
     });
 
     it('should be the appropriate color', () => {

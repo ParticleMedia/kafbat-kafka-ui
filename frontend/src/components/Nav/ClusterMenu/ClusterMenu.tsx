@@ -13,6 +13,7 @@ import {
   clusterSchemasPath,
   clusterTopicsPath,
   kafkaConnectPath,
+  clusterPartitionReassignmentPath,
 } from 'lib/paths';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'lib/hooks/useLocalStorage';
@@ -89,6 +90,13 @@ const ClusterMenu: FC<ClusterMenuProps> = ({
             isActive={getIsMenuItemActive(clusterConsumerGroupsPath(name))}
             to={clusterConsumerGroupsPath(name)}
             title="Consumers"
+          />
+          <MenuItem
+            isActive={getIsMenuItemActive(
+              clusterPartitionReassignmentPath(name)
+            )}
+            to={clusterPartitionReassignmentPath(name)}
+            title="Cluster Operations"
           />
           {hasFeatureConfigured(ClusterFeaturesEnum.SCHEMA_REGISTRY) && (
             <MenuItem

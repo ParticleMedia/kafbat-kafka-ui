@@ -3,6 +3,7 @@ import {
   clusterConnectorsRelativePath,
   clusterKsqlDbQueryPath,
   clusterTopicMessagesPath,
+  clusterTopicReassignmentPath,
 } from 'lib/paths';
 import {
   buildPageTitle,
@@ -27,6 +28,14 @@ describe('pageTitles', () => {
         'orders'
       )
     ).toBe('Messages | orders | local | Kafbat UI');
+
+    expect(
+      getTopicPageTitle(
+        clusterTopicReassignmentPath('local', 'orders'),
+        'local',
+        'orders'
+      )
+    ).toBe('Reassignment | orders | local | Kafbat UI');
   });
 
   it('maps connector detail routes to section titles', () => {

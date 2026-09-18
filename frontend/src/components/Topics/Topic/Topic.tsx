@@ -12,6 +12,7 @@ import {
   clusterTopicConsumerGroupsRelativePath,
   clusterTopicEditRelativePath,
   clusterTopicMessagesRelativePath,
+  clusterTopicReassignmentRelativePath,
   clusterTopicSettingsRelativePath,
   clusterTopicsPath,
   clusterTopicStatisticsRelativePath,
@@ -57,6 +58,7 @@ import Edit from './Edit/Edit';
 import Connectors from './Connectors/Connectors';
 import SendMessage from './SendMessage/SendMessage';
 import Acls from './Acls/Acls';
+import AssignmentPlanner from './Reassignment/AssignmentPlanner';
 
 const Topic: React.FC = () => {
   const {
@@ -225,6 +227,12 @@ const Topic: React.FC = () => {
             >
               Overview
             </NavLink>
+            <NavLink
+              to={clusterTopicReassignmentRelativePath}
+              className={({ isActive }) => (isActive ? 'is-active' : '')}
+            >
+              Reassignment
+            </NavLink>
             <ActionNavLink
               to={clusterTopicMessagesRelativePath}
               className={({ isActive }) => (isActive ? 'is-active' : '')}
@@ -287,6 +295,18 @@ const Topic: React.FC = () => {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route index element={<Overview />} />
+                <Route
+                  path={clusterTopicReassignmentRelativePath}
+                  element={
+                    data ? (
+                      <AssignmentPlanner
+                        key={`${clusterName}:${data.name}`}
+                        clusterName={clusterName}
+                        topic={data}
+                      />
+                    ) : null
+                  }
+                />
                 <Route
                   path={clusterTopicMessagesRelativePath}
                   element={<Messages />}

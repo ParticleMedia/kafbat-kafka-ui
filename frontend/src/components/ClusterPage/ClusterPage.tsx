@@ -15,6 +15,7 @@ import {
   kafkaConnectRelativePath,
   clusterConnectorNewRelativePath,
   clusterConnectConnectorRelativePath,
+  clusterPartitionReassignmentRelativePath,
 } from 'lib/paths';
 import ClusterContext from 'components/contexts/ClusterContext';
 import PageLoader from 'components/common/PageLoader/PageLoader';
@@ -37,6 +38,10 @@ const ConsumerGroups = React.lazy(
   () => import('components/ConsumerGroups/ConsumerGroups')
 );
 const AclPage = React.lazy(() => import('components/ACLPage/ACLPage'));
+const PartitionReassignment = React.lazy(
+  () =>
+    import('components/ClusterOperations/PartitionReassignment/PartitionReassignment')
+);
 
 const ClusterPage: React.FC = () => {
   const { clusterName } = useAppParams<ClusterNameRoute>();
@@ -135,6 +140,10 @@ const ClusterPage: React.FC = () => {
                 element={<ClusterConfigPage />}
               />
             )}
+            <Route
+              path={clusterPartitionReassignmentRelativePath}
+              element={<PartitionReassignment />}
+            />
             <Route
               path="/"
               element={<Navigate to={clusterBrokerRelativePath} replace />}

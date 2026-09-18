@@ -13,6 +13,7 @@ import {
   clusterTopicEditPath,
   clusterTopicMessagesPath,
   clusterTopicPath,
+  clusterTopicReassignmentPath,
   clusterTopicSettingsPath,
   clusterTopicStatisticsPath,
   kafkaConnectClustersRelativePath,
@@ -98,6 +99,10 @@ export const getTopicPageTitle = (
 ) => {
   if (pathname === clusterTopicMessagesPath(clusterName, topicName)) {
     return buildPageTitle('Messages', topicName, clusterName);
+  }
+
+  if (pathname === clusterTopicReassignmentPath(clusterName, topicName)) {
+    return buildPageTitle('Reassignment', topicName, clusterName);
   }
 
   if (pathname === clusterTopicSettingsPath(clusterName, topicName)) {

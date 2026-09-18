@@ -153,6 +153,7 @@ export const clusterTopicCopyPath = (
 
 // Topics topic
 export const clusterTopicSettingsRelativePath = 'settings';
+export const clusterTopicReassignmentRelativePath = 'reassignment';
 export const clusterTopicMessagesRelativePath = 'messages';
 export const clusterTopicConsumerGroupsRelativePath = 'consumer-groups';
 export const clusterTopicStatisticsRelativePath = 'statistics';
@@ -171,6 +172,14 @@ export const clusterTopicSettingsPath = (
     clusterName,
     topicName
   )}/${clusterTopicSettingsRelativePath}`;
+export const clusterTopicReassignmentPath = (
+  clusterName: ClusterName = RouteParams.clusterName,
+  topicName: TopicName = RouteParams.topicName
+) =>
+  `${clusterTopicPath(
+    clusterName,
+    topicName
+  )}/${clusterTopicReassignmentRelativePath}`;
 export const clusterTopicMessagesPath = (
   clusterName: ClusterName = RouteParams.clusterName,
   topicName: TopicName = RouteParams.topicName
@@ -318,6 +327,13 @@ export const clusterKsqlDbTablesPath = (
 export const clusterKsqlDbStreamsPath = (
   clusterName: ClusterName = RouteParams.clusterName
 ) => `${clusterKsqlDbPath(clusterName)}/${clusterKsqlDbStreamsRelativePath}`;
+
+// Cluster operations
+export const clusterPartitionReassignmentRelativePath =
+  'cluster-operations/partition-reassignment';
+export const clusterPartitionReassignmentPath = (
+  clusterName: ClusterName = RouteParams.clusterName
+) => `${clusterPath(clusterName)}/${clusterPartitionReassignmentRelativePath}`;
 
 // Cluster Config
 export const clusterConfigRelativePath = 'config';

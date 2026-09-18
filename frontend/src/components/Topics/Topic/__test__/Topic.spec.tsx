@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ClusterContext from 'components/contexts/ClusterContext';
 import Details from 'components/Topics/Topic/Topic';
@@ -9,6 +9,7 @@ import {
   clusterTopicEditRelativePath,
   clusterTopicMessagesPath,
   clusterTopicPath,
+  clusterTopicReassignmentPath,
   clusterTopicSettingsPath,
   clusterTopicsPath,
   clusterTopicStatisticsPath,
@@ -42,6 +43,10 @@ const clearTopicMessages = jest.fn();
 jest.mock('components/Topics/Topic/Overview/Overview', () => () => (
   <>OverviewMock</>
 ));
+jest.mock(
+  'components/Topics/Topic/Reassignment/AssignmentPlanner',
+  () => () => <>AssignmentPlannerMock</>
+);
 jest.mock('components/Topics/Topic/Messages/Messages', () => () => (
   <>MessagesMock</>
 ));
@@ -238,6 +243,20 @@ describe('Details', () => {
 
     it('renders Overview tab by default', () => {
       itExpectsCorrectPageRendered(defaultPath, 'Overview', 'OverviewMock');
+    });
+    it('renders Reassignment next to Overview', () => {
+      renderComponent();
+      const links = within(screen.getByRole('navigation')).getAllByRole('link');
+
+      expect(links[0]).toHaveTextContent('Overview');
+      expect(links[1]).toHaveTextContent('Reassignment');
+    });
+    it('renders Reassignment tab', () => {
+      itExpectsCorrectPageRendered(
+        clusterTopicReassignmentPath(),
+        'Reassignment',
+        'AssignmentPlannerMock'
+      );
     });
     it('renders Messages tabs', () => {
       itExpectsCorrectPageRendered(

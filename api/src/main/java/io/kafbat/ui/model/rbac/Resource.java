@@ -5,6 +5,7 @@ import io.kafbat.ui.model.rbac.permission.ApplicationConfigAction;
 import io.kafbat.ui.model.rbac.permission.AuditAction;
 import io.kafbat.ui.model.rbac.permission.ClientQuotaAction;
 import io.kafbat.ui.model.rbac.permission.ClusterConfigAction;
+import io.kafbat.ui.model.rbac.permission.ClusterOperationAction;
 import io.kafbat.ui.model.rbac.permission.ConnectAction;
 import io.kafbat.ui.model.rbac.permission.ConnectorAction;
 import io.kafbat.ui.model.rbac.permission.ConsumerGroupAction;
@@ -27,6 +28,8 @@ public enum Resource {
   APPLICATIONCONFIG(ApplicationConfigAction.values()),
 
   CLUSTERCONFIG(ClusterConfigAction.values()),
+
+  CLUSTER_OPERATION(ClusterOperationAction.values()),
 
   TOPIC(TopicAction.values()),
 

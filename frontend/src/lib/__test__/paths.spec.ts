@@ -182,6 +182,17 @@ describe('Paths', () => {
       )
     );
   });
+  it('clusterTopicReassignmentPath', () => {
+    expect(paths.clusterTopicReassignmentPath(clusterName, topicId)).toEqual(
+      `${paths.clusterTopicPath(clusterName, topicId)}/reassignment`
+    );
+    expect(paths.clusterTopicReassignmentPath()).toEqual(
+      paths.clusterTopicReassignmentPath(
+        RouteParams.clusterName,
+        RouteParams.topicName
+      )
+    );
+  });
   it('clusterTopicConsumerGroupsPath', () => {
     expect(paths.clusterTopicConsumerGroupsPath(clusterName, topicId)).toEqual(
       `${paths.clusterTopicPath(clusterName, topicId)}/consumer-groups`
@@ -387,6 +398,14 @@ describe('Paths', () => {
     );
     expect(paths.clusterKsqlDbStreamsPath()).toEqual(
       paths.clusterKsqlDbStreamsPath(RouteParams.clusterName)
+    );
+  });
+  it('clusterPartitionReassignmentPath', () => {
+    expect(paths.clusterPartitionReassignmentPath(clusterName)).toEqual(
+      `${paths.clusterPath(clusterName)}/cluster-operations/partition-reassignment`
+    );
+    expect(paths.clusterPartitionReassignmentPath()).toEqual(
+      paths.clusterPartitionReassignmentPath(RouteParams.clusterName)
     );
   });
 });

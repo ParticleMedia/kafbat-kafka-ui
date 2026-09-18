@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 public sealed interface PermissibleAction permits
     AclAction, ApplicationConfigAction,
     ConsumerGroupAction, SchemaAction,
-    ConnectAction, ConnectorAction, ClusterConfigAction,
+    ConnectAction, ConnectorAction, ClusterConfigAction, ClusterOperationAction,
     KsqlAction, TopicAction, AuditAction, ClientQuotaAction {
 
   String name();

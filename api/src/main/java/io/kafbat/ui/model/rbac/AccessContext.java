@@ -8,6 +8,7 @@ import io.kafbat.ui.model.rbac.permission.ApplicationConfigAction;
 import io.kafbat.ui.model.rbac.permission.AuditAction;
 import io.kafbat.ui.model.rbac.permission.ClientQuotaAction;
 import io.kafbat.ui.model.rbac.permission.ClusterConfigAction;
+import io.kafbat.ui.model.rbac.permission.ClusterOperationAction;
 import io.kafbat.ui.model.rbac.permission.ConnectAction;
 import io.kafbat.ui.model.rbac.permission.ConnectorAction;
 import io.kafbat.ui.model.rbac.permission.ConsumerGroupAction;
@@ -123,6 +124,11 @@ public record AccessContext(String cluster,
 
     public AccessContextBuilder clusterConfigActions(ClusterConfigAction... actions) {
       accessedResources.add(new SingleResourceAccess(Resource.CLUSTERCONFIG, List.of(actions)));
+      return this;
+    }
+
+    public AccessContextBuilder clusterOperationActions(ClusterOperationAction... actions) {
+      accessedResources.add(new SingleResourceAccess(Resource.CLUSTER_OPERATION, List.of(actions)));
       return this;
     }
 

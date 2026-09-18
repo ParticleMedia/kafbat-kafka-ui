@@ -1,0 +1,41 @@
+name: kafbat-ui-external-clusters
+
+# Copy external-clusters-application.example.yml to
+# external-clusters-application.yml and replace the example endpoints locally.
+
+services:
+  reassignment-journal-init:
+    image: alpine:3.20
+    user: "0"
+    command:
+      - chown
+      - -R
+      - "100:101"
+      - /var/lib/kafbat-ui/reassignment-operations
+    volumes:
+      - reassignment-operations:/var/lib/kafbat-ui/reassignment-operations
+    restart: "no"
+
+  kafbat-ui:
+    container_name: kafbat-ui-external-clusters
+    image: kafbat-ui:cmak-phase0
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: build/libs/api-0.0.1-SNAPSHOT.jar
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/etc/kafkaui/application.yml
+      SWAGGER_UI_ENABLED: "true"
+    volumes:
+      - ./external-clusters-application.yml:/etc/kafkaui/application.yml:ro
+      - reassignment-operations:/var/lib/kafbat-ui/reassignment-operations
+    restart: unless-stopped
+    depends_on:
+      reassignment-journal-init:
+        condition: service_completed_successfully
+
+volumes:
+  reassignment-operations:

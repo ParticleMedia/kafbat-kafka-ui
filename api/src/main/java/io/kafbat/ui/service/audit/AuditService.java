@@ -244,6 +244,13 @@ public class AuditService implements Closeable {
     }
   }
 
+  public void auditSystem(AccessContext context, @Nullable Throwable error) {
+    sendAuditRecord(
+        context,
+        new AuthenticatedUser("kafbat-ui-system", Set.of()),
+        error);
+  }
+
   private void sendAuditRecord(AccessContext ctx, AuthenticatedUser user) {
     sendAuditRecord(ctx, user, null);
   }

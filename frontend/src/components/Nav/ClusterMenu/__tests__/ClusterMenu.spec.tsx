@@ -29,6 +29,7 @@ describe('ClusterMenu', () => {
   const getBrokers = () => screen.getByTitle('Brokers');
   const getTopics = () => screen.getByTitle('Topics');
   const getConsumers = () => screen.getByTitle('Consumers');
+  const getClusterOperations = () => screen.getByTitle('Cluster Operations');
   const getKafkaConnect = () => screen.getByTitle('Kafka Connect');
   const getCluster = () => screen.getByText(onlineClusterPayload.name);
 
@@ -45,11 +46,12 @@ describe('ClusterMenu', () => {
 
     expect(getMenuItems().length).toEqual(1);
     await clickChevron();
-    expect(getMenuItems().length).toEqual(4);
+    expect(getMenuItems().length).toEqual(5);
 
     expect(getBrokers()).toBeInTheDocument();
     expect(getTopics()).toBeInTheDocument();
     expect(getConsumers()).toBeInTheDocument();
+    expect(getClusterOperations()).toBeInTheDocument();
   });
 
   it('renders cluster menu with correct set of features', async () => {
@@ -65,11 +67,12 @@ describe('ClusterMenu', () => {
     );
     expect(getMenuItems().length).toEqual(1);
     await clickChevron();
-    expect(getMenuItems().length).toEqual(7);
+    expect(getMenuItems().length).toEqual(8);
 
     expect(getBrokers()).toBeInTheDocument();
     expect(getTopics()).toBeInTheDocument();
     expect(getConsumers()).toBeInTheDocument();
+    expect(getClusterOperations()).toBeInTheDocument();
     expect(screen.getByTitle('Schema Registry')).toBeInTheDocument();
     expect(getKafkaConnect()).toBeInTheDocument();
     expect(screen.getByTitle('KSQL DB')).toBeInTheDocument();
@@ -80,11 +83,12 @@ describe('ClusterMenu', () => {
       initialEntries: [clusterConnectorsPath(onlineClusterPayload.name)],
     });
 
-    expect(getMenuItems().length).toEqual(4);
+    expect(getMenuItems().length).toEqual(5);
     expect(getCluster()).toBeInTheDocument();
     expect(getBrokers()).toBeInTheDocument();
     expect(getTopics()).toBeInTheDocument();
     expect(getConsumers()).toBeInTheDocument();
+    expect(getClusterOperations()).toBeInTheDocument();
   });
 
   it('makes Kafka Connect link active', async () => {
@@ -97,7 +101,7 @@ describe('ClusterMenu', () => {
     );
     expect(getMenuItems().length).toEqual(1);
     await clickChevron();
-    expect(getMenuItems().length).toEqual(5);
+    expect(getMenuItems().length).toEqual(6);
 
     const kafkaConnect = getKafkaConnect();
     expect(kafkaConnect).toBeInTheDocument();

@@ -13,6 +13,7 @@ import {
 } from 'lib/hooks/api/topics';
 import TopicTable from 'components/Topics/List/TopicTable';
 import { clusterTopicsPath } from 'lib/paths';
+import { useClusterStats } from 'lib/hooks/api/clusters';
 
 const clusterName = 'test-cluster';
 
@@ -26,12 +27,19 @@ jest.mock('lib/hooks/api/topics', () => ({
   useClearTopicMessages: jest.fn(),
 }));
 
+jest.mock('lib/hooks/api/clusters', () => ({
+  useClusterStats: jest.fn(),
+}));
+
 const deleteTopicMock = jest.fn();
 const recreateTopicMock = jest.fn();
 const clearTopicMessages = jest.fn();
 
 describe('TopicTable Components', () => {
   beforeEach(() => {
+    (useClusterStats as jest.Mock).mockReturnValue({
+      data: { brokerCount: 4 },
+    });
     (useDeleteTopic as jest.Mock).mockImplementation(() => ({
       mutateAsync: deleteTopicMock,
     }));
@@ -89,19 +97,90 @@ describe('TopicTable Components', () => {
     });
   });
   describe('with topics', () => {
+    it('renders CMAK-compatible topic distribution and traffic columns', () => {
+      renderComponent({
+        topics: [
+          {
+            ...externalTopicPayload,
+            name: 'distribution.topic',
+            partitionCount: 3,
+            replicationFactor: 2,
+            underReplicatedPartitions: 1,
+            bytesInPerSec: 1024,
+            bytesOutPerSec: 2048,
+            partitions: [
+              {
+                partition: 0,
+                leader: 1,
+                offsetMin: 0,
+                offsetMax: 100,
+                replicas: [
+                  { broker: 1, leader: true, inSync: true },
+                  { broker: 2, leader: false, inSync: true },
+                ],
+              },
+              {
+                partition: 1,
+                leader: 1,
+                offsetMin: 0,
+                offsetMax: 200,
+                replicas: [
+                  { broker: 1, leader: true, inSync: true },
+                  { broker: 3, leader: false, inSync: true },
+                ],
+              },
+              {
+                partition: 2,
+                leader: 1,
+                offsetMin: 0,
+                offsetMax: 300,
+                replicas: [
+                  { broker: 2, leader: false, inSync: true },
+                  { broker: 1, leader: true, inSync: true },
+                ],
+              },
+            ],
+          },
+        ],
+        pageCount: 1,
+      });
+
+      [
+        'Brokers',
+        'Broker Spread',
+        'Replica Skew',
+        'Leader Skew',
+        'Preferred Leaders',
+        'Under Replicated',
+        'Recent Offsets',
+        'Bytes In / sec',
+        'Bytes Out / sec',
+      ].forEach((name) => {
+        expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
+      });
+
+      const row = screen.getByRole('row', { name: /distribution\.topic/ });
+      expect(row).toHaveTextContent('75%');
+      expect(row).toHaveTextContent('33%');
+      expect(row).toHaveTextContent('66%');
+      expect(row).toHaveTextContent('600');
+      expect(row).toHaveTextContent('1 KB/s');
+      expect(row).toHaveTextContent('2 KB/s');
+    });
+
     it('renders correct rows', () => {
       renderComponent({ topics: topicsPayload, pageCount: 1 });
       expect(
         screen.getByRole('link', { name: '__internal.topic' })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('row', { name: '__internal.topic 1 0 1 0 0 Bytes' })
+        screen.getByRole('row', { name: /__internal\.topic/ })
       ).toBeInTheDocument();
       expect(
         screen.getByRole('link', { name: 'external.topic' })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('row', { name: 'external.topic 1 0 1 0 1 KB' })
+        screen.getByRole('row', { name: /external\.topic/ })
       ).toBeInTheDocument();
 
       expect(screen.getAllByRole('checkbox').length).toEqual(3);
@@ -214,7 +293,7 @@ describe('TopicTable Components', () => {
         ).toEqual(2);
         // Internal topic action buttons are disabled
         const internalTopicRow = screen.getByRole('row', {
-          name: '__internal.topic 1 0 1 0 0 Bytes',
+          name: /__internal\.topic/,
         });
         expect(internalTopicRow).toBeInTheDocument();
         expect(
@@ -224,7 +303,7 @@ describe('TopicTable Components', () => {
         ).toBeDisabled();
         // External topic action buttons are enabled
         const externalTopicRow = screen.getByRole('row', {
-          name: 'external.topic 1 0 1 0 1 KB',
+          name: /external\.topic/,
         });
         expect(externalTopicRow).toBeInTheDocument();
         const extBtn = within(externalTopicRow).getByRole('button', {

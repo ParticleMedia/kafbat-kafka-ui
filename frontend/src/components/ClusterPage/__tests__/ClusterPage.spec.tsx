@@ -11,6 +11,7 @@ import {
   clusterPath,
   clusterSchemasPath,
   clusterTopicsPath,
+  clusterPartitionReassignmentPath,
   kafkaConnectPath,
 } from 'lib/paths';
 import { useClusters } from 'lib/hooks/api/clusters';
@@ -23,6 +24,7 @@ const CLusterCompText = {
   Brokers: 'Brokers',
   ConsumerGroups: 'ConsumerGroups',
   KsqlDb: 'KsqlDb',
+  PartitionReassignment: 'PartitionReassignment',
 };
 
 jest.mock('components/Topics/Topics', () => () => (
@@ -43,6 +45,10 @@ jest.mock('components/ConsumerGroups/ConsumerGroups', () => () => (
 jest.mock('components/KsqlDb/KsqlDb', () => () => (
   <div>{CLusterCompText.KsqlDb}</div>
 ));
+jest.mock(
+  'components/ClusterOperations/PartitionReassignment/PartitionReassignment',
+  () => () => <div>{CLusterCompText.PartitionReassignment}</div>
+);
 
 jest.mock('lib/hooks/api/clusters', () => ({
   useClusters: jest.fn(),
@@ -77,6 +83,12 @@ describe('ClusterPage', () => {
     await renderComponent(clusterConsumerGroupsPath('second'));
     expect(
       screen.getByText(CLusterCompText.ConsumerGroups)
+    ).toBeInTheDocument();
+  });
+  it('renders partition reassignment', async () => {
+    await renderComponent(clusterPartitionReassignmentPath('second'));
+    expect(
+      screen.getByText(CLusterCompText.PartitionReassignment)
     ).toBeInTheDocument();
   });
 

@@ -1,0 +1,40 @@
+kafka:
+  cluster-operations:
+    partition-reassignment-execution-enabled: true
+    operation-journal-path: /var/lib/kafbat-ui/reassignment-operations
+  clusters:
+    - name: dev
+      bootstrapServers: dev.kafka.example.com:9092
+      schemaRegistry: http://schema-registry.dev.example.com
+      metrics:
+        port: 9103
+        type: PROMETHEUS
+      kafkaConnect:
+        - name: dev
+          address: http://kafka-connect.dev.example.com
+      audit:
+        topicAuditEnabled: true
+        consoleAuditEnabled: true
+        topic: kui-audit-log
+        auditTopicProperties:
+          retention.ms: 259200000
+        auditTopicsPartitions: 1
+        level: all
+
+    - name: staging
+      bootstrapServers: staging-1.kafka.example.com:9092,staging-2.kafka.example.com:9092
+      schemaRegistry: http://schema-registry.staging.example.com
+      metrics:
+        port: 11001
+        type: PROMETHEUS
+      kafkaConnect:
+        - name: staging
+          address: http://kafka-connect.staging.example.com
+      audit:
+        topicAuditEnabled: true
+        consoleAuditEnabled: true
+        topic: kui-audit-log
+        auditTopicProperties:
+          retention.ms: 604800000
+        auditTopicsPartitions: 1
+        level: all
